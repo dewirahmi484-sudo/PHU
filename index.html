@@ -3,152 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Papan Pesan - Single File</title>
+    <title>Pusat Halal UNISBA - Cek Produk</title>
     <style>
-        /* Desain Tampilan (CSS) */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            padding: 20px; 
-            background-color: #f9f9f9; 
+        /* Desain UI/UX */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f7f4;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            text-align: center;
         }
-        .container { 
-            max-width: 500px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-top: 5px solid #198754; /* Warna hijau Halal */
         }
-        input[type="text"] { 
-            width: 70%; 
-            padding: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            font-size: 16px;
+        .header img {
+            width: 80px;
+            margin-bottom: 10px;
         }
-        button { 
-            padding: 10px 15px; 
-            background-color: #28a745; 
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 16px;
+        h1 {
+            color: #198754;
+            font-size: 24px;
+            margin-bottom: 5px;
         }
-        button:hover { background-color: #218838; }
-        ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        li { 
-            background: #e9ecef; 
-            margin: 10px 0; 
-            padding: 12px; 
-            border-radius: 4px; 
-            text-align: left; 
+        p.subtitle {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        .search-box {
             display: flex;
-            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        .delete-btn {
-            background-color: #dc3545;
-            padding: 5px 10px;
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #198754;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #198754;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #146c43;
+        }
+        
+        /* Area Hasil */
+        #resultArea {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid #198754;
+        }
+        .card h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        .card p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .status-valid {
+            display: inline-block;
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 3px 8px;
+            border-radius: 4px;
             font-size: 12px;
+            font-weight: bold;
         }
-        .delete-btn:hover { background-color: #c82333; }
+        .not-found {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Struktur Tampilan (HTML) -->
     <div class="container">
-        <h1>Papan Pesan</h1>
+        <div class="header">
+            <!-- Ikon pengganti logo -->
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="#198754" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z"/>
+                <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="#198754" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <h1>Pusat Halal UNISBA</h1>
+            <p class="subtitle">Portal Pengecekan Sertifikasi Halal Produk & UMKM</p>
+        </div>
         
-        <div>
-            <input type="text" id="messageInput" placeholder="Ketik pesan Anda di sini..." onkeypress="handleEnter(event)" />
-            <button onclick="tambahPesan()">Kirim</button>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Masukkan nama produk atau ID Sertifikat..." onkeypress="handleEnter(event)" />
+            <button onclick="cariProduk()">Cari</button>
         </div>
 
-        <ul id="messageList">
-            <!-- Daftar pesan akan dirender oleh JavaScript di sini -->
-        </ul>
+        <div id="resultArea">
+            <!-- Hasil pencarian akan muncul di sini -->
+        </div>
     </div>
 
-    <!-- Logika Program (JavaScript) -->
     <script>
-        // Mengambil data dari Local Storage browser, atau buat array default jika kosong
-        let dbPesan = JSON.parse(localStorage.getItem('pesanTersimpan')) || [
-            { id: 1, text: "Halo! Ini pesan contoh. Coba tambahkan pesan baru." }
+        // Simulasi Database Produk Halal (Biasanya data ini ditarik dari API/Backend)
+        const databaseHalal = [
+            { id: "ID123450001", nama: "Keripik Singkong Barokah", kategori: "Makanan Ringan", produsen: "UMKM Barokah Bandung", berlakuHingga: "12 Oktober 2027" },
+            { id: "ID123450002", nama: "Ayam Geprek Mang Ujang", kategori: "Restoran/Siap Saji", produsen: "PT Ujang Kuliner", berlakuHingga: "05 Januari 2028" },
+            { id: "ID123450003", nama: "Roti Manis Al-Kautsar", kategori: "Roti & Kue", produsen: "Al-Kautsar Bakery", berlakuHingga: "20 Agustus 2026" },
+            { id: "ID123450004", nama: "Sabun Wajah Wardah", kategori: "Kosmetik", produsen: "PT Paragon", berlakuHingga: "30 Desember 2028" }
         ];
 
-        // Fungsi untuk menampilkan pesan ke layar
-        function renderPesan() {
-            const listElement = document.getElementById('messageList');
-            listElement.innerHTML = ''; // Kosongkan daftar sebelum menggambar ulang
+        function cariProduk() {
+            const input = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultArea = document.getElementById('resultArea');
+            
+            // Kosongkan hasil sebelumnya
+            resultArea.innerHTML = '';
 
-            dbPesan.forEach(pesan => {
-                const li = document.createElement('li');
-                
-                // Teks pesan
-                const spanText = document.createElement('span');
-                spanText.textContent = pesan.text;
-                
-                // Tombol hapus (tambahan fitur)
-                const btnHapus = document.createElement('button');
-                btnHapus.textContent = 'Hapus';
-                btnHapus.className = 'delete-btn';
-                btnHapus.onclick = () => hapusPesan(pesan.id);
-
-                li.appendChild(spanText);
-                li.appendChild(btnHapus);
-                listElement.appendChild(li);
-            });
-        }
-
-        // Fungsi untuk menambahkan pesan baru
-        function tambahPesan() {
-            const input = document.getElementById('messageInput');
-            const teksPesan = input.value;
-
-            // Validasi jika input kosong
-            if (teksPesan.trim() === '') {
-                alert('Pesan tidak boleh kosong!');
+            if (input === '') {
+                resultArea.innerHTML = '<div class="not-found">Silakan masukkan nama produk atau ID terlebih dahulu.</div>';
                 return;
             }
 
-            // Tambahkan data ke array
-            const pesanBaru = {
-                id: Date.now(), // Gunakan waktu saat ini sebagai ID unik
-                text: teksPesan
-            };
-            dbPesan.push(pesanBaru);
+            // Filter data berdasarkan nama produk atau ID sertifikat
+            const hasilPencarian = databaseHalal.filter(produk => 
+                produk.nama.toLowerCase().includes(input) || 
+                produk.id.toLowerCase().includes(input)
+            );
 
-            // Simpan ke Local Storage dan perbarui tampilan
-            simpanKeStorage();
-            input.value = ''; 
-            renderPesan(); 
-        }
-
-        // Fungsi untuk menghapus pesan
-        function hapusPesan(id) {
-            // Saring array, buang pesan dengan ID yang cocok
-            dbPesan = dbPesan.filter(pesan => pesan.id !== id);
-            
-            simpanKeStorage();
-            renderPesan();
-        }
-
-        // Fungsi pembantu untuk menyimpan data ke Local Storage
-        function simpanKeStorage() {
-            localStorage.setItem('pesanTersimpan', JSON.stringify(dbPesan));
-        }
-
-        // Fungsi agar bisa menekan "Enter" pada keyboard untuk mengirim
-        function handleEnter(event) {
-            if (event.key === 'Enter') {
-                tambahPesan();
+            // Render hasil
+            if (hasilPencarian.length > 0) {
+                hasilPencarian.forEach(produk => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerHTML = `
+                        <h3>${produk.nama}</h3>
+                        <p><strong>ID Sertifikat:</strong> ${produk.id}</p>
+                        <p><strong>Produsen:</strong> ${produk.produsen}</p>
+                        <p><strong>Kategori:</strong> ${produk.kategori}</p>
+                        <p><strong>Status:</strong> <span class="status-valid">Halal Valid</span> (Berlaku s/d ${produk.berlakuHingga})</p>
+                    `;
+                    resultArea.appendChild(card);
+                });
+            } else {
+                resultArea.innerHTML = `
+                    <div class="not-found">
+                        <strong>Produk tidak ditemukan.</strong><br>
+                        Pastikan kata kunci benar, atau produk belum terdaftar dalam database Pusat Halal Unisba.
+                    </div>`;
             }
         }
 
-        // Tampilkan pesan pertama kali saat halaman dibuka
-        renderPesan();
+        // Fitur tekan tombol "Enter" untuk mencari
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                cariProduk();
+            }
+        }
     </script>
 </body>
 </html>
